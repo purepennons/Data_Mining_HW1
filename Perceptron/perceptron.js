@@ -11,14 +11,14 @@
 var log = console.log;
 
 function Perceptron(){
-	this.numOfInput = 0;
-	this.numOfOutput = 0;
-	this.x = null;
-	this.w = null;
-	this.y = null;
-	this.finalW = null;
-	this.testRate = 0.01;
-	this.errorRate = 1;
+	this.numOfInput = 0; //input個數
+	this.numOfOutput = 0;	//output個數
+	this.x = null;  //input array
+	this.w = null;  //weight array
+	this.y = null;  //output array 
+	this.finalW = null;  //final weight array
+	this.testRate = 0.01;  //testing rate
+	this.errorDiff = 1;  //當errorDiff^2夠小時 便當做訓練成功
 
 /*** initial and basic functions ***/	
 	this.init = function(numOfInput, numOfOutput){
@@ -31,7 +31,7 @@ function Perceptron(){
 	}
 
 	this.nodeInit = function(x0, w0){	//初始化x, w, y array並設定basis value
-		if(typeof(x0) != 'number' || w0 != 'number'){
+		if(typeof(x0) != 'number' || typeof(w0) != 'number'){
 			return false
 		}
 		this.x = this.createArray(this.numOfInput, 1);
@@ -134,4 +134,5 @@ p.nodeInit(-1, 1);
 log(p.x);
 log(p.w);
 log(p.y);
+
 
