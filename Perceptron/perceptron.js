@@ -171,11 +171,12 @@ function Perceptron(){
 		if(typeof(truthTable) == null || this.x == null || this.w == null || this.y == null){
 			return false;
 		}
+		log(truthTable);
 		for(var i=0; i<this.maxTrainTimes;i++){
 			var eSum = 0.0;
 			for(var j=0; j<truthTable.length;j++){
 				var yd = truthTable[j][truthTable[j].length-1];  //期望輸出
-				for(var v=0;v<truthTable[0].length-1;v++){
+				for(var v=0;v<truthTable[j].length-1;v++){
 					this.x[v+1] = truthTable[j][v];
 				}
 				this.y[0] = this.estResult(this.x, this.w);  //實際輸出
@@ -204,13 +205,29 @@ function Perceptron(){
 	}
 
 }
+
+var learn = function (truthTable, tableName){
+
+	var p = new Perceptron();
+	p.init(2, 1, 0.01, 0.0001, 1000);
+	p.nodeInit(-1, 1);
+	var trainFlag = p.train(truthTable);
+	if(trainFlag){
+		log(tableName +'訓練成功');
+	}else {
+		log(tableName + '訓練失敗');
+	}
+}
+
 var andTable = [ [ 0, 0, 0 ], [ 0, 1, 0 ], [ 1, 0, 0 ], [ 1, 1, 1 ] ]; // AND 函數的真值表
 var orTable  = [ [ 0, 0, 0 ], [ 0, 1, 1 ], [ 1, 0, 1 ], [ 1, 1, 1 ] ]; // OR  函數的真值表
-var p = new Perceptron();
-p.init(2, 1, 0.01, 0.0001, 1000);
-p.nodeInit(-1, 1);
-var trainFlag = p.train(andTable);
-log(trainFlag);
+var xorTable = [ [ 0, 0, 0 ], [ 0, 1, 1 ], [ 1, 0, 1 ], [ 1, 1, 0 ] ]; // XOR 函數的真值表
+
+learn(andTable, 'and');
+learn(orTable, 'or');
+learn(xorTable, 'xor');
+
+
 
 
 
