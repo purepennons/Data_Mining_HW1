@@ -7,9 +7,6 @@
 //檔名:perceptron.js
 //運行環境:node.js v0.10.25
 
-
-var log = console.log;
-
 function Perceptron(){
 	this.numOfInput = 0; //input個數
 	this.numOfOutput = 0;	//output個數
@@ -17,12 +14,13 @@ function Perceptron(){
 	this.w = null;  //weight array
 	this.y = null;  //output array 
 	this.finalW = null;  //final weight array
+	this.finalWArray = null;
 	this.testRate = 0.01;  //testing rate
 	this.errorFlag = 0.0001;  //當errorFlag夠小時 便當做訓練成功
 	this.maxTrainTimes = 1000;  //最大測試次數
 
 /*** initial and basic functions ***/	
-	this.init = function(numOfInput, numOfOutput, testRate, errorFlag, maxTrainTimes){
+	this.init = function(numOfInput, numOfOutput, testRate, errorFlag, maxTrainTimes, resultW){
 		if(typeof(numOfInput)=='number' &&  typeof(numOfOutput)=='number' && typeof(testRate)=='number' && typeof(errorFlag)=='number' && typeof(maxTrainTimes)=='number'){
 			if(numOfInput >= 0 && numOfOutput >=0 && testRate > 0 && testRate < 1 && errorFlag > 0 && errorFlag < 1 && maxTrainTimes > 0){
 				this.numOfInput = parseInt(numOfInput + 1); //加上基本的node
@@ -30,6 +28,7 @@ function Perceptron(){
 				this.testRate = testRate;
 				this.errorFlag = errorFlag;
 				this.maxTrainTimes = maxTrainTimes;
+				this.finalWArray = resultW;
 				return true;
 			}
 		}
@@ -115,6 +114,10 @@ function Perceptron(){
 		return null;
 	}
 
+	this.getFinalWArray = function(){
+		return this.finalWArray;
+	}
+
 	this.setTestRate = function(testRate){
 		if(testRate < 1 && testRate > 0){
 			this.testRate = testRate;
@@ -167,7 +170,7 @@ function Perceptron(){
 		
 	}
 
-	this.train = function(truthTable){  //truthTable 中，每項的最後一元素為輸出結果
+	this.train = function(truthTable, tableName){  //truthTable 中，每項的最後一元素為輸出結果
 		if(typeof(truthTable) == null || this.x == null || this.w == null || this.y == null){
 			return false;
 		}
@@ -192,7 +195,12 @@ function Perceptron(){
 				// }				
 			}
 			if(eSum < this.errorFlag){
-				this.finalW = this.w;
+				this.finalW = this.createArray(this.numOfInput+1, 1);
+				for(var v=0;v<this.w.length;v++){
+					this.finalW[v+1] = this.w[v];
+				}
+				this.finalW[0] = tableName;
+				this.finalWArray.push(this.finalW);
 				return true;
 			}
 
@@ -200,7 +208,7 @@ function Perceptron(){
 		return false;
 	}
 
-	this.run = function(){
+	this.run = function(booleanFunction, input){
 
 	}
 
@@ -209,15 +217,23 @@ function Perceptron(){
 var learn = function (truthTable, tableName){
 
 	var p = new Perceptron();
-	p.init(2, 1, 0.01, 0.0001, 1000);
+	p.init(2, 1, 0.01, 0.0001, 1000, resultW);
 	p.nodeInit(-1, 1);
-	var trainFlag = p.train(truthTable);
+	var trainFlag = p.train(truthTable, tableName);
 	if(trainFlag){
 		log(tableName +'訓練成功');
+		log('finalW = ' + p.finalW);
 	}else {
 		log(tableName + '訓練失敗');
 	}
+	log('已經訓練之權重:');
+	log(resultW);
 }
+
+//執行主程式
+
+var log = console.log;
+var resultW = [];
 
 var andTable = [ [ 0, 0, 0 ], [ 0, 1, 0 ], [ 1, 0, 0 ], [ 1, 1, 1 ] ]; // AND 函數的真值表
 var orTable  = [ [ 0, 0, 0 ], [ 0, 1, 1 ], [ 1, 0, 1 ], [ 1, 1, 1 ] ]; // OR  函數的真值表
