@@ -147,6 +147,10 @@ function Perceptron(){
 		return false;
 	}
 
+	this.getMaxTrainTimes = function(){
+		return this.maxTrainTimes;
+	}
+
 
 /*** Perceptron Main Functions ***/
 
@@ -164,25 +168,35 @@ function Perceptron(){
 	}
 
 	this.train = function(truthTable){  //truthTable 中，每項的最後一元素為輸出結果
-		if(!truthTable || this.x == null || this.w == null || this.y = null){
+		if(typeof(truthTable) == null || this.x == null || this.w == null || this.y == null){
 			return false;
 		}
-		var dw = this.createArray(this.numOfInput, 1);
-		for(var i=0; i<maxTrainTimes;i++){
+		for(var i=0; i<this.maxTrainTimes;i++){
 			var eSum = 0.0;
 			for(var j=0; j<truthTable.length;j++){
-				var yd = truthTable[j][truthTable.length-1];  //期望輸出
-				for(var v in this.x){
-					this.x[v] = truthTable[j][v];
+				var yd = truthTable[j][truthTable[j].length-1];  //期望輸出
+				for(var v=0;v<truthTable[0].length-1;v++){
+					this.x[v+1] = truthTable[j][v];
 				}
 				this.y[0] = this.estResult(this.x, this.w);  //實際輸出
 				var e = yd - this.y[0];  //期望與實際輸出間的誤差
 				eSum += e*e;	//計算差距總和
-
+				var dw = this.createArray(this.numOfInput, 1); //w變量 array
+				for(var v=0;v<truthTable.length-1;v++){
+					dw[v] = this.testRate * this.x[v] * e;
+					this.w[v] += dw[v];
+				}
+				// if(i%10 == 0){
+					log('x = ' + this.x + ' w = ' + this.w + ' y = ' + this.y[0] + ' yd = ' + yd);
+				// }				
+			}
+			if(eSum < this.errorFlag){
+				this.finalW = this.w;
+				return true;
 			}
 
 		}
-		return true;
+		return false;
 	}
 
 	this.run = function(){
@@ -190,10 +204,13 @@ function Perceptron(){
 	}
 
 }
-
+var andTable = [ [ 0, 0, 0 ], [ 0, 1, 0 ], [ 1, 0, 0 ], [ 1, 1, 1 ] ]; // AND 函數的真值表
+var orTable  = [ [ 0, 0, 0 ], [ 0, 1, 1 ], [ 1, 0, 1 ], [ 1, 1, 1 ] ]; // OR  函數的真值表
 var p = new Perceptron();
 p.init(2, 1, 0.01, 0.0001, 1000);
 p.nodeInit(-1, 1);
+var trainFlag = p.train(andTable);
+log(trainFlag);
 
 
 
