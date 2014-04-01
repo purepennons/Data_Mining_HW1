@@ -190,9 +190,9 @@ function Perceptron(){
 					dw[v] = this.testRate * this.x[v] * e;
 					this.w[v] += dw[v];
 				}
-				// if(i%10 == 0){
+				if(i%10 == 0){
 					log('x = ' + this.x + ' w = ' + this.w + ' y = ' + this.y[0] + ' yd = ' + yd);
-				// }				
+				}				
 			}
 			if(eSum < this.errorFlag){
 				this.finalW = this.createArray(this.numOfInput+1, 1);
@@ -208,14 +208,16 @@ function Perceptron(){
 		return false;
 	}
 
-	this.run = function(booleanFunction, input){
+	this.run = function(booleanFunction, input){ß
 
 	}
 
 }
 
-var learn = function (truthTable, tableName){
+module.exports = Perceptron; //輸出模組
 
+var learn = function (truthTable, tableName){
+	log('開始訓練' + tableName);
 	var p = new Perceptron();
 	p.init(2, 1, 0.01, 0.0001, 1000, resultW);
 	p.nodeInit(-1, 1);
