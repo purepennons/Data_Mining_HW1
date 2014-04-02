@@ -7,6 +7,17 @@
 //檔名:perceptron.js
 //運行環境:node.js v0.10.25
 
+
+var log = console.log;
+var resultW = [];
+var createArray = function(length, initValue){
+	var newArray = [];
+	for(var i=0;i<length;i++){
+		newArray.push(initValue);
+	}
+	return newArray;
+}
+
 function Perceptron(){
 	this.numOfInput = 0; //input個數
 	this.numOfOutput = 0;	//output個數
@@ -27,7 +38,7 @@ function Perceptron(){
 				this.numOfOutput = parseInt(numOfOutput);
 				this.testRate = testRate;
 				this.errorFlag = errorFlag;
-				this.maxTrainTimes = maxTrainTimes;
+				this.maxTrainTimes = parseInt(maxTrainTimes);
 				this.finalWArray = resultW;
 				return true;
 			}
@@ -39,20 +50,12 @@ function Perceptron(){
 		if(typeof(x0) != 'number' || typeof(w0) != 'number'){
 			return false
 		}
-		this.x = this.createArray(this.numOfInput, 1);
+		this.x = createArray(this.numOfInput, 1);
 		this.x[0] = x0;
-		this.w = this.createArray(this.numOfInput, 0);
+		this.w = createArray(this.numOfInput, 0);
 		this.w[0] = w0;
-		this.y = this.createArray(this.numOfOutput, 0);
+		this.y = createArray(this.numOfOutput, 0);
 		return true;
-	}
-
-	this.createArray = function(length, initValue){
-		var newArray = [];
-		for(var i=0;i<length;i++){
-			newArray.push(initValue);
-		}
-		return newArray;
 	}
 
 	// this.transferFunction = function(tranF){  //轉換function選擇
@@ -185,7 +188,7 @@ function Perceptron(){
 				this.y[0] = this.estResult(this.x, this.w);  //實際輸出
 				var e = yd - this.y[0];  //期望與實際輸出間的誤差
 				eSum += e*e;	//計算差距總和
-				var dw = this.createArray(this.numOfInput, 1); //w變量 array
+				var dw = createArray(this.numOfInput, 1); //w變量 array
 				for(var v=0;v<truthTable.length-1;v++){
 					dw[v] = this.testRate * this.x[v] * e;
 					this.w[v] += dw[v];
@@ -195,7 +198,7 @@ function Perceptron(){
 				}				
 			}
 			if(eSum < this.errorFlag){
-				this.finalW = this.createArray(this.numOfInput+1, 1);
+				this.finalW = createArray(this.numOfInput+1, 1);
 				for(var v=0;v<this.w.length;v++){
 					this.finalW[v+1] = this.w[v];
 				}
@@ -208,7 +211,7 @@ function Perceptron(){
 		return false;
 	}
 
-	this.run = function(booleanFunction, input){ß
+	this.run = function(booleanFunction, input){
 
 	}
 
@@ -233,9 +236,6 @@ var learn = function (truthTable, tableName){
 }
 
 //執行主程式
-
-var log = console.log;
-var resultW = [];
 
 var andTable = [ [ 0, 0, 0 ], [ 0, 1, 0 ], [ 1, 0, 0 ], [ 1, 1, 1 ] ]; // AND 函數的真值表
 var orTable  = [ [ 0, 0, 0 ], [ 0, 1, 1 ], [ 1, 0, 1 ], [ 1, 1, 1 ] ]; // OR  函數的真值表
