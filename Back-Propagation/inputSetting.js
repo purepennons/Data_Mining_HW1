@@ -2,7 +2,7 @@ var BP = require('./BP.js');
 var log  = console.log;
 var ni = 4;
 var nh = 2*ni + 1;
-var no = 1;
+var no = 1;	//no=1 => no=3 因為輸出表達方式從字串轉成陣列(ex:Iris-setosa => [0, 0, 1])
 var inputData;
 var fs = require('fs');
 fs.readFile('iris.data.txt', function(err, data) {
@@ -38,5 +38,6 @@ fs.readFile('iris.data.txt', function(err, data) {
     var bp = new BP();
     no = 3;
     bp.init(ni, nh, no);
-    bp.train(inputArray, 10000, 0.5, 0.1);
+    var errorRate = bp.train(inputArray, 1000, 0.5, 0.1, 'sigmoid', 'dSigmoid');
+
 });

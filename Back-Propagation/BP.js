@@ -34,24 +34,18 @@ function BP(){
 	this.numOfHidden = 0;  //隱藏層數目
 	this.numOfOutput = 0;  //輸出數目
 	this.w_xh = null;  //輸入至隱藏層的權重，bit0為basis
-	this.w_hy = null;  //隱藏層至輸出的權重，bit0為basis
+	this.w_hy = null;  //隱藏層至輸出的權重
 	this.dw_xh = null;  //輸入至隱藏層的權重變化量
 	this.dw_hy = null;  //隱藏層至輸出的權重變化量
-	// this.theta_h = null;  //隱藏層的閥值
-	// this.theta_y = null;  //輸出層的閥值
-	// this.dtheta_h = null;  //隱藏層的閥值的變化量
-	// this.dtheta_y = null;  //輸出層的閥值的變化量
-	this.m_xh = null;
-	this.m_hy = null;
+	this.finalW = null;
 	this.x = null;  //輸入資料，bit0為basis
-	this.h = null;  //暫存隱藏層，bit0為basis
+	this.h = null;  //暫存隱藏層
 	this.y = null;  //暫存輸出結果
 	this.deltasOfOutput = null;
 	this.deltasOfHidden = null;
-	this.finalW = null;  //final weight array
-	this.finalWArray = null;
 	this.learningRate = 0.01;  //testing rate
 	this.maxTrainTimes = 1000;  //最大測試次數	
+	this.errorRate = [];
 
 /*** initial and basic functions ***/	
 	this.init = function(numOfInput, numOfHidden, numOfOutput){
@@ -141,7 +135,7 @@ function BP(){
 	}
 
 	//反傳遞學習函數反求變化量與權重
-	this.backPropagation = function(yd, learningRate, moment, dTranFunction){  
+	this.backPropagation = function(yd, learningRate, moment, dTranFunction){  //選用moment作為爬過肩型之動量（可不使用）
 		//計算輸出層誤差
 		this.deltasOfOutput = createArray(this.numOfOutput, 0.0);
 		for(var i=0;i<this.numOfOutput;i++){
@@ -162,7 +156,8 @@ function BP(){
 		for(var i=0;i<this.numOfHidden;i++){
 			for(var j=0;j<this.numOfOutput;j++){
 				this.dw_hy[i][j] = learningRate * this.deltasOfOutput[j] * this.h[i];
-				this.w_hy[i][j] += this.dw_hy[i][j] + moment * this.dw_hy[i][j];
+				// this.w_hy[i][j] += this.dw_hy[i][j] + moment * this.dw_hy[i][j];
+				this.w_hy[i][j] += this.dw_hy[i][j];
 			}
 		}
 
@@ -171,28 +166,54 @@ function BP(){
 		for(var i=0;i<this.numOfInput;i++){
 			for(var j=0;j<this.numOfHidden;j++){
 				this.dw_xh[i][j] = learningRate * this.deltasOfHidden[j] * this.x[i];
-				this.w_xh[i][j] += this.dw_xh[i][j] + moment * this.dw_xh[i][j];
+				// this.w_xh[i][j] += this.dw_xh[i][j] + moment * this.dw_xh[i][j];
+				this.w_xh[i][j] += this.dw_xh[i][j];
 			}
 		}
+		return [this.w_xh, this.w_hy];
+	}
+
+	this.normalizeOutputs = function(unNormalOutputs){	//使用四捨五入作正規化
+		for(var o=0;o<unNormalOutputs.length;o++){
+			unNormalOutputs[o] = Math.round(unNormalOutputs[o]);
+		}
+		return unNormalOutputs;
+	}
+
+	//比較實際輸出與期望輸出是否相同
+	this.errorCheck = function(ys, yds){
+		//先將ys作四捨五入
+		ys = this.normalizeOutputs(ys);
+		for(var i=0;i<ys.length;i++){
+			if(ys[i] != yds[i]){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	//訓練主程式
-	this.train = function(testSample, maxTrainTimes, learningRate, moment){
+	this.train = function(testSample, maxTrainTimes, learningRate, moment, tranF, dtranF){	 //測試樣本, 訓練次數, 學習比率, 動量, 轉換函數, 轉換函數之微分
 		for(var times=0;times<maxTrainTimes;times++){
+			var totalRecords = testSample.length;
+			var timesOfError = 0;
 			for(var sample in testSample){
 				var partSample = testSample[sample];
 				var inputs = partSample[0];
 				var yds = partSample[1];
-				var outputs = this.update(inputs, 'sigmoid');
-				this.backPropagation(yds, learningRate, moment, 'dSigmoid');
-				//log('y = ' +  outputs + ' yd = ' + yds);
-				var a = Math.round(outputs[0]);
-				var b = Math.round(outputs[1]);
-				var c = Math.round(outputs[2]);
-				log('y = ' + a + ' ' + b + ' ' + c + ' yd = ' + yds);
+				var outputs = this.update(inputs, tranF);	//計算實際輸出
+				this.finalW =  this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
+				var errorFlag = this.errorCheck(outputs, yds);	//回傳此筆輸出是否相同
+				log('input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
+				if(!errorFlag){
+					timesOfError++;
+				}
 			}
+			this.errorRate.push(timesOfError/totalRecords);
+			log('errorRate = ' + this.errorRate[times]);
 		}
-
+		log(this.finalW);
+		return this.errorRate;
 	}
 
 	//使用完成訓練之權重計算預測結果

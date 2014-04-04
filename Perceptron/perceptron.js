@@ -58,13 +58,6 @@ function Perceptron(){
 		return true;
 	}
 
-	// this.transferFunction = function(tranF){  //轉換function選擇
-	// 	switch(tranF){
-	// 		case 'sign':
-	// 			return Math.sign();
-	// 	}
-	// }
-
 	this.setNumOfInput = function(numOfInput){
 		if(typeof(numOfInput)=='number' && numOfInput >= 0){
 			this.numOfInput = parseInt(numOfInput+1); //加上基本node
