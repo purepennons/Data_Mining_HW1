@@ -92,7 +92,7 @@ function BP(){
 	this.tranF = function(f, x){
 		switch(f){
 			case 'sigmoid':
-				return 1/(1+Math.pow(Math.E, -x));
+				return 1.0/(1+Math.pow(Math.E, -x));
 			case 'tanh':
 				return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
 		}
@@ -183,9 +183,13 @@ function BP(){
 				var partSample = testSample[sample];
 				var inputs = partSample[0];
 				var yds = partSample[1];
-				var outputs = this.update(inputs, 'tanh');
-				this.backPropagation(yds, learningRate, moment, 'dTanh');
-				log('y = ' +  outputs[0] + ' yd = ' + yds);
+				var outputs = this.update(inputs, 'sigmoid');
+				this.backPropagation(yds, learningRate, moment, 'dSigmoid');
+				//log('y = ' +  outputs + ' yd = ' + yds);
+				var a = Math.round(outputs[0]);
+				var b = Math.round(outputs[1]);
+				var c = Math.round(outputs[2]);
+				log('y = ' + a + ' ' + b + ' ' + c + ' yd = ' + yds);
 			}
 		}
 
@@ -198,16 +202,5 @@ function BP(){
 
 }
 
-
-var pat = [
-  [[0,0], [0]],
-  [[0,1], [1]],
-  [[1,0], [1]],
-  [[1,1], [0]]
-];
-var bp = new BP();
-bp.init(2, 2, 1);
-bp.train(pat, 10000, 0.5, 0.1);
-log(pat);
-
+module.exports = BP;
 
