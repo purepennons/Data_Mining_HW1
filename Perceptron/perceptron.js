@@ -8,7 +8,6 @@
 //運行環境:node.js v0.10.25
 
 
-var log = console.log;
 var resultW = [];
 var createArray = function(length, initValue){
 	var newArray = [];
@@ -170,7 +169,7 @@ function Perceptron(){
 		if(typeof(truthTable) == null || this.x == null || this.w == null || this.y == null){
 			return false;
 		}
-		log(truthTable);
+		console.log(truthTable);
 		for(var i=0; i<this.maxTrainTimes;i++){
 			var eSum = 0.0;
 			for(var j=0; j<truthTable.length;j++){
@@ -186,9 +185,9 @@ function Perceptron(){
 					dw[v] = this.testRate * this.x[v] * e;
 					this.w[v] += dw[v];
 				}
-				if(i%10 == 0){
-					log('x = ' + this.x + ' w = ' + this.w + ' y = ' + this.y[0] + ' yd = ' + yd);
-				}				
+				// if(i%10 == 0){
+				 	console.log('x = ' + this.x + ' w = ' + this.w + ' y = ' + this.y[0] + ' yd = ' + yd);
+				// }				
 			}
 			if(eSum < this.errorFlag){
 				this.finalW = createArray(this.numOfInput+1, 1);
@@ -213,19 +212,19 @@ function Perceptron(){
 module.exports = Perceptron; //輸出模組
 
 var learn = function (truthTable, tableName){
-	log('開始訓練' + tableName);
+	console.log('開始訓練' + tableName);
 	var p = new Perceptron();
 	p.init(2, 1, 0.01, 0.0001, 1000, resultW);
 	p.nodeInit(-1, 1);
 	var trainFlag = p.train(truthTable, tableName);
 	if(trainFlag){
-		log(tableName +'訓練成功');
-		log('finalW = ' + p.finalW);
+		console.log(tableName +'訓練成功');
+		console.log('finalW = ' + p.finalW);
 	}else {
-		log(tableName + '訓練失敗');
+		console.log(tableName + '訓練失敗');
 	}
-	log('已經訓練之權重:');
-	log(resultW);
+	console.log('已經訓練之權重:');
+	console.log(resultW);
 }
 
 //執行主程式

@@ -7,7 +7,6 @@
 //檔名:BP.js
 //運行環境:node.js v0.10.25
 
-var log = console.log;
 var createArray = function(length, initValue){  //初始化陣列
 	var newArray = [];
 	for(var i=0;i<length;i++){
@@ -33,13 +32,13 @@ function BP(){
 	this.numOfInput = 0;  //輸入數目
 	this.numOfHidden = 0;  //隱藏層數目
 	this.numOfOutput = 0;  //輸出數目
-	this.w_xh = null;  //輸入至隱藏層的權重，bit0為basis
-	this.w_hy = null;  //隱藏層至輸出的權重
+	this.w_xh = null;  //輸入至隱藏層的權重，最後bit為basis
+	this.w_hy = null;  //隱藏層至輸出的權重，最後bit為basis
 	this.dw_xh = null;  //輸入至隱藏層的權重變化量
 	this.dw_hy = null;  //隱藏層至輸出的權重變化量
 	this.finalW = null;
-	this.x = null;  //輸入資料，bit0為basis
-	this.h = null;  //暫存隱藏層
+	this.x = null;  //輸入資料，最後bit為basis(-1)
+	this.h = null;  //暫存隱藏層，最後bit為basis(-1)
 	this.y = null;  //暫存輸出結果
 	this.deltasOfOutput = null;
 	this.deltasOfHidden = null;
@@ -52,7 +51,7 @@ function BP(){
 		if(typeof(numOfInput)=='number' && typeof(numOfHidden)=='number' && typeof(numOfOutput)=='number'){
 			if(numOfInput >= 0 && numOfHidden >= 0 && numOfOutput >=0){
 				this.numOfInput = parseInt(numOfInput + 1); //加上基本的node
-				this.numOfHidden = parseInt(numOfHidden);
+				this.numOfHidden = parseInt(numOfHidden + 1);  //加上基本的node
 				this.numOfOutput = parseInt(numOfOutput);
 
 				//initial arrays for nodes
@@ -67,12 +66,12 @@ function BP(){
 				//give random nums for arrays and weights
 				for(var i=0;i<this.numOfInput;i++){
 					for(var h=0;h<this.numOfHidden;h++){
-						this.w_xh[i][h] = getRandomNum(-0.2, 0.2);
+						this.w_xh[i][h] = getRandomNum(-0.5, 0.5);
 					}
 				}
 				for(var h=0;h<this.numOfHidden;h++){
 					for(var o=0;o<this.numOfOutput;o++){
-						this.w_hy[h][o] = getRandomNum(-2.0, 2.0);
+						this.w_hy[h][o] = getRandomNum(-0.5, 0.5);
 					}
 				}
 				this.deltasOfHidden = createArray(this.numOfHidden, 0.0);
@@ -111,7 +110,7 @@ function BP(){
 
 		//將每筆input讀入x
 		for(var v=0;v<inputData.length;v++){
-			this.x[v+1] = inputData[v];
+			this.x[v] = inputData[v];
 		}
 
 		//計算輸入層至隱藏層的輸出 - this.h
@@ -174,18 +173,19 @@ function BP(){
 	}
 
 	this.normalizeOutputs = function(unNormalOutputs){	//使用四捨五入作正規化
+		var normalOutputs = [];
 		for(var o=0;o<unNormalOutputs.length;o++){
-			unNormalOutputs[o] = Math.round(unNormalOutputs[o]);
+			normalOutputs.push(Math.round(unNormalOutputs[o]));
 		}
-		return unNormalOutputs;
+		return normalOutputs;
 	}
 
 	//比較實際輸出與期望輸出是否相同
 	this.errorCheck = function(ys, yds){
 		//先將ys作四捨五入
-		ys = this.normalizeOutputs(ys);
+		var yns = this.normalizeOutputs(ys);
 		for(var i=0;i<ys.length;i++){
-			if(ys[i] != yds[i]){
+			if(yns[i] != yds[i]){
 				return false;
 			}
 		}
@@ -194,6 +194,7 @@ function BP(){
 
 	//訓練主程式
 	this.train = function(testSample, maxTrainTimes, learningRate, moment, tranF, dtranF){	 //測試樣本, 訓練次數, 學習比率, 動量, 轉換函數, 轉換函數之微分
+		var flag = 0;
 		for(var times=0;times<maxTrainTimes;times++){
 			var totalRecords = testSample.length;
 			var timesOfError = 0;
@@ -204,21 +205,47 @@ function BP(){
 				var outputs = this.update(inputs, tranF);	//計算實際輸出
 				this.finalW =  this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
 				var errorFlag = this.errorCheck(outputs, yds);	//回傳此筆輸出是否相同
-				log('input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
+				if(times%100 == 0){
+					console.log('# ' + times + ' input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
+				}
 				if(!errorFlag){
 					timesOfError++;
 				}
 			}
 			this.errorRate.push(timesOfError/totalRecords);
-			log('errorRate = ' + this.errorRate[times]);
+			if(times%100 == 0){
+				console.log('# ' + times + ' errorRate = ' + this.errorRate[times]);		
+			}
+			// if(this.errorRate[times] < 0.02){
+			// 	flag++;
+			// }else {
+			// 	if(flag!=0){
+			// 		flag = 0;
+			// 	}
+			// }
+			// if(flag > 3){
+			// 	return this.errorRate;
+			// }
 		}
-		log(this.finalW);
+		console.log(this.finalW);
 		return this.errorRate;
 	}
 
 	//使用完成訓練之權重計算預測結果
-	this.recall = function(){
-
+	this.recall = function(inputData, tranF){
+		var timesOfError = 0;
+		for(var v in inputData){
+			var partInput = inputData[v];
+			var inputs = partInput[0];
+			var yds = partInput[1];
+			var outputs = this.update(inputs, tranF);
+			var errorFlag = this.errorCheck(outputs, yds);
+			if(!errorFlag){
+				timesOfError++;
+			}
+			console.log('input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
+		}
+		return timesOfError/inputData.length;
 	}
 
 }

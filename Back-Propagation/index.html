@@ -1,20 +1,15 @@
-var BP = require('./BP.js');
-var xor = [
-  [[0,0], [0]],
-  [[0,1], [1]],
-  [[1,0], [1]],
-  [[1,1], [0]]
-];
-console.log('xor:')
-console.log(xor);
-var bp = new BP();
-var nh = 2*2 + 1;
-bp.init(2, nh, 1);
-var errorRate = bp.train(xor, 10000, 0.3, 0.1, 'tanh', 'dTanh');
-var recallErrorRate = bp.recall(xor, 'tanh');
-console.log('error = ' + recallErrorRate);
-console.log(errorRate);
-var error = [ 0.75,
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data Mining HW1</title>
+  </head>
+  <body>
+  	<canvas id="curveCanvas" width="500" height="300"  style="border:none;" ></canvas>
+  	<script src="xorSetting.js"></script>
+  	<script>
+		var d = new DescartesCanvas();
+  		var flag = d.init('curveCanvas');
+  		var err = [ 0.75,
   0.75,
   0.5,
   0.5,
@@ -10013,4 +10008,52 @@ var error = [ 0.75,
   0,
   0,
   0,
-  0 ]
+  0 ];
+
+  		d.draw(err);
+
+		function DescartesCanvas(){
+			this.canvasId = null;
+			this.canvas = null;
+			this.ctx = null;
+			this.canvasHeight = null;
+			this.canvasWidth = null;
+
+			this.init = function(canvasId){
+				try{
+					this.canvasId = canvasId;
+					this.canvas = document.getElementById(this.canvasId);
+					this.ctx = this.canvas.getContext('2d');
+					this.canvasHeight = this.canvas.height;
+					this.canvasWidth = this.canvas.width;
+					this.basicLine();
+					return true;
+				}catch(e){
+					return false;
+				}
+			}
+
+			this.basicLine = function(){
+				this.ctx.beginPath();
+				this.ctx.moveTo(0, 0);
+				this.ctx.lineTo(0, this.canvasHeight);
+				this.ctx.lineTo(this.canvasWidth, this.canvasHeight);
+				this.ctx.stroke();
+			}
+
+			this.draw = function(coordinate){
+				this.ctx.moveTo(0, this.canvasHeight);
+				for(var i=0;i<100;i++){
+					//this.ctx.beginPath();
+					//this.ctx.moveTo( i*parseInt((this.canvasWidth/100)), 25);
+					//document.write(i*parseInt((coordinate.length/100))+ '<br>');
+					this.ctx.fillRect(i*parseInt((this.canvasWidth/100)),coordinate[i*parseInt((coordinate.length/100))],2,2);
+				}
+
+			}
+		}
+
+  	</script>
+
+  </body>
+</html>
