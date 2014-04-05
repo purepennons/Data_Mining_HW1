@@ -44,7 +44,6 @@ function BP(){
 	this.deltasOfHidden = null;
 	this.learningRate = 0.01;  //testing rate
 	this.maxTrainTimes = 1000;  //最大測試次數	
-	this.errorRate = [];
 
 /*** initial and basic functions ***/	
 	this.init = function(numOfInput, numOfHidden, numOfOutput){
@@ -169,7 +168,13 @@ function BP(){
 				this.w_xh[i][j] += this.dw_xh[i][j];
 			}
 		}
-		return [this.w_xh, this.w_hy];
+
+		var error = 0.0;
+		for(var k=0;k<yd.length;k++){
+			error = error + 0.5*Math.pow(yd[k]-this.y[k],2);
+		}
+		//return [this.w_xh, this.w_hy];
+		return error;
 	}
 
 	this.normalizeOutputs = function(unNormalOutputs){	//使用四捨五入作正規化
@@ -195,15 +200,18 @@ function BP(){
 	//訓練主程式
 	this.train = function(testSample, maxTrainTimes, learningRate, moment, tranF, dtranF){	 //測試樣本, 訓練次數, 學習比率, 動量, 轉換函數, 轉換函數之微分
 		var flag = 0;
+		var errorRate = [];
 		for(var times=0;times<maxTrainTimes;times++){
 			var totalRecords = testSample.length;
 			var timesOfError = 0;
+			var error = 0.0;
 			for(var sample in testSample){
 				var partSample = testSample[sample];
 				var inputs = partSample[0];
 				var yds = partSample[1];
 				var outputs = this.update(inputs, tranF);	//計算實際輸出
-				this.finalW =  this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
+				//this.finalW =  this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
+				error += this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
 				var errorFlag = this.errorCheck(outputs, yds);	//回傳此筆輸出是否相同
 				if(times%100 == 0){
 					console.log('# ' + times + ' input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
@@ -212,9 +220,11 @@ function BP(){
 					timesOfError++;
 				}
 			}
-			this.errorRate.push(timesOfError/totalRecords);
+			var err = timesOfError/totalRecords;
+			errorRate.push(err);
+			//this.errorRate.push(error);
 			if(times%100 == 0){
-				console.log('# ' + times + ' errorRate = ' + this.errorRate[times]);		
+				console.log('# ' + times + ' errorRate = ' + errorRate[times]);		
 			}
 			// if(this.errorRate[times] < 0.02){
 			// 	flag++;
@@ -228,7 +238,7 @@ function BP(){
 			// }
 		}
 		console.log(this.finalW);
-		return this.errorRate;
+		return errorRate;
 	}
 
 	//使用完成訓練之權重計算預測結果

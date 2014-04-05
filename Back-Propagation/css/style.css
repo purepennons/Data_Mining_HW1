@@ -1,0 +1,13 @@
+body {
+	margin: 20px;
+}
+canvas {
+	display: block;
+	margin: 10px;
+}
+.container{
+
+}
+.content {
+	margin: 0 auto;
+}
