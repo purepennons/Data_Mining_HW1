@@ -185,9 +185,9 @@ function Perceptron(){
 					dw[v] = this.testRate * this.x[v] * e;
 					this.w[v] += dw[v];
 				}
-				// if(i%10 == 0){
-				 	console.log('x = ' + this.x + ' w = ' + this.w + ' y = ' + this.y[0] + ' yd = ' + yd);
-				// }				
+				if(i%10 == 0){
+				 	console.log('#' + i +' x = ' + this.x + ' w = ' + this.w + ' y = ' + this.y[0] + ' yd = ' + yd);
+				}				
 			}
 			if(eSum < this.errorFlag){
 				this.finalW = createArray(this.numOfInput+1, 1);

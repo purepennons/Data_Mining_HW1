@@ -306,9 +306,14 @@ Back Propagation neural network algorithm
 				console.log(recallData);
 				var text = document.getElementById('recallRecords');
 				var innerText = '';
+				var errTimes = 0;
 				for(var array in recallData){
+					if(!recallData[array][3]){
+						errTimes++;
+					}
 					innerText += 'inputs = [' + recallData[array][0]  + '], ' + ' yds = [' + recallData[array][1] + '], ' + 'real outputs = [' + recallData[array][2] + '], ' + 'errorCheck = [' + recallData[array][3] + ']' + '\n';
 				}
+				innerText = 'Error rate = ' + errTimes/recallData.length + '\n' + innerText;
 				text.value = innerText;
 
 			}

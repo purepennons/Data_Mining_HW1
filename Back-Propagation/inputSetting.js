@@ -79,5 +79,5 @@ bp.init(ni, nh, no);
 var errorRate = bp.train(inputArray, 10000, 0.3, 0.1, 'sigmoid', 'dSigmoid');
 // var recallErrorRate = bp.recall(inputArray, 'sigmoid');
 var recallData = bp.recall(inputArray, 'sigmoid');
-console.log('error = ' + recallErrorRate);
+//console.log('error = ' + recallErrorRate);
 
