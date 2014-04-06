@@ -1,28 +1,47 @@
+
+<!-- 
+2014年 Data Mining HW1
+Back Propagation neural network algorithm
+系別:電子工程系碩一
+學號:M10202154
+姓名:林佳豪
+檔名:BP.js
+運行環境:node.js v0.10.25 + webkit 
+-->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">    
     <title>Data Mining HW1</title>
-    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+<!--     <link rel="stylesheet" type="text/css" href="css/normalize.css">
+ -->
+ 	<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
+ 	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="canvasjs.min.js"></script>
 </head>
 <body>
 	<div class="container">
 	  	<div class="content">
-	  		<canvas id="curveCanvas" width="510" height="310"  style="border:none;" ></canvas>
-	  	</div>
+<!-- 	  		<canvas id="curveCanvas" width="510" height="310"  style="border:none;" ></canvas>
+ -->
+ 			<div id="chartContainer" style="height: 300px; width: 100%;">
+ 	  	</div>
+
 	  	<div class="content">
 	  	  	<label>
 	  	  		資料選擇：
-		  		<select id="dataSet">
+		  		<select class="form-control" id="dataSet">
 		  			<option value="1">XOR</option>
 		  			<option value="2">Iris</option>  			
 		  		</select>
 		  	</label>
 	  	  	<label>
 	  	  		訓練次數：
-		  		<select id="trainTimes">
+		  		<select class="form-control" id="trainTimes">
 		  			<option value="1000">1000</option>
 		  			<option value="2000">2000</option>  			
 		  			<option value="5000">5000</option>  			
@@ -31,7 +50,7 @@
 		  	</label>
 	  	  	<label>
 	  	  		訓練比率：
-		  		<select id="trainRate">
+		  		<select class="form-control" id="trainRate">
 		  			<option value="0.1">0.1</option>
 		  			<option value="0.3">0.3</option>  			
 		  			<option value="0.5">0.5</option>  			
@@ -40,73 +59,103 @@
 		  	</label>
 	  	  	<label>
 	  	  		轉換函數：
-		  		<select id="tranFunction">
+		  		<select class="form-control" id="tranFunction">
 		  			<option value="sigmoid">sigmoid</option>
 		  			<option value="tanh">tanh</option>  			
 		  		</select>
 		  	</label>
 	  	  	<label>
 	  	  		隱藏層節點數量：
-		  		<select id="numOfHidden">
+		  		<select class="form-control" id="numOfHidden">
 		  			<option value="1">2*Ni+1</option>
 		  			<option value="2">(Ni*No)^1/2</option>
 		  			<option value="3">1/2*(Ni*No)</option>
+		  			<option value="10">10</option>
+		  			<option value="100">100</option>
+		  			<option value="1000">1000</option>		  			
 		  		</select>
 		  	</label>
-		  	<button onclick="startToTrain();">開始訓練</button>
-		  	<button>測試</button>
+		  	<button type="button" class="btn btn-success" onclick="startToTrain();">開始訓練</button>
+		  	<button type="button" class="btn btn-warning" onclick="startToRecall();">測試</button>
 
+	  	</div>
+	  	<div class="content">
+			<textarea id=recallRecords class="form-control" rows="10" disabled></textarea>
 	  	</div>
 	</div>
 	<script>	//全域變數
 		var BP = require('./BP.js');
-		var bp = new BP();
+		var bp = null;
 		var errorRate = null;
+		var inputData = null;
+		var ni = 0;
+		var nh = 0;
+		var no = 0;
+		var tranf = '';
+		var dTranf = '';		
 	</script>
 	<script>	//繪圖主函式
-		function DescartesCanvas(){
-			this.canvasId = null;
-			this.canvas = null;
-			this.ctx = null;
-			this.canvasHeight = null;
-			this.canvasWidth = null;
+		// function DescartesCanvas(){
+		// 	this.canvasId = null;
+		// 	this.canvas = null;
+		// 	this.ctx = null;
+		// 	this.initCanvasHeight = null;
+		// 	this.initCanvasWidth = null;
+		// 	this.canvasHeight = null;
+		// 	this.canvasWidth = null;
 
-			this.init = function(canvasId){
-				try{
-					this.canvasId = canvasId;
-					this.canvas = document.getElementById(this.canvasId);
-					this.ctx = this.canvas.getContext('2d');
-					this.canvasHeight = this.canvas.height - 10;
-					this.canvasWidth = this.canvas.width - 10;
-					this.ctx.clearRect(0, 0, this.canvas.height, this.canvas.width);
-					this.basicLine();
-					return true;
-				}catch(e){
-					return false;
-				}
-			}
+		// 	this.init = function(canvasId){
+		// 		try{
+		// 			this.canvasId = canvasId;
+		// 			this.canvas = document.getElementById(this.canvasId);
+		// 			this.ctx = this.canvas.getContext('2d');
+		// 			this.initCanvasHeight = this.canvas.height;
+		// 			this.initCanvasWidth = this.canvas.width;
+		// 			this.canvasHeight = this.canvas.height - 10;
+		// 			this.canvasWidth = this.canvas.width - 10;
+		// 			this.basicLine();
+		// 			return true;
+		// 		}catch(e){
+		// 			return false;
+		// 		}
+		// 	}
 
-			this.basicLine = function(){
-				this.ctx.beginPath();
-				this.ctx.moveTo(0, 0);
-				this.ctx.lineTo(0, this.canvasHeight);
-				this.ctx.lineTo(this.canvasWidth, this.canvasHeight);
-				this.ctx.stroke();
-			}
+		// 	this.basicLine = function(){
+		// 		this.ctx.beginPath();
+		// 		this.ctx.moveTo(0, 0);
+		// 		this.ctx.lineTo(0, this.canvasHeight);
+		// 		this.ctx.lineTo(this.canvasWidth, this.canvasHeight);
+		// 		this.ctx.moveTo(0, 0)
+		// 		for(var i=1;i<10;i++){
+		// 			this.ctx.moveTo(0, (this.canvasHeight/10)*i);
+		// 			this.ctx.lineTo(this.canvasWidth, (this.canvasHeight/10)*i);
+		// 		}
+		// 		this.ctx.stroke();
+		// 		this.ctx.closePath();
+		// 	}
 
-			this.draw = function(coordinate){
-				this.ctx.moveTo(0, this.canvasHeight);
-				for(var i=0;i<100;i++){
-					//this.ctx.beginPath();
-					//this.ctx.moveTo( i*parseInt((this.canvasWidth/100)), 25);
-					var x_axis = i*parseInt((this.canvasWidth/100));
-					var y_axis = (1-coordinate[i*parseInt((coordinate.length/100))])*100*parseInt((this.canvasHeight/100));
-					y_axis = (y_axis!=this.canvasHeight)?y_axis:y_axis-2;
-					this.ctx.fillRect(x_axis, y_axis,4,4);
-				}
+		// 	this.clearCanvas = function(){
+		// 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		// 	}
 
-			}
-		}
+		// 	this.draw = function(coordinate){
+		// 		this.ctx.beginPath();
+		// 		var beforeX = 0, beforeY = 0;
+		// 		for(var i=0;i<100;i++){					
+		// 			this.ctx.moveTo(beforeX, beforeY);
+		// 			var x_axis = i*parseInt((this.canvasWidth/100));
+		// 			var y_axis = (1-coordinate[i*parseInt((coordinate.length/100))])*100*parseInt((this.canvasHeight/100));
+		// 			//y_axis = (y_axis!=this.canvasHeight)?y_axis:y_axis-2;
+		// 			//y_axis = y_axis-2; //將點位置置中
+		// 			this.ctx.fillRect(x_axis-2, y_axis-2,4,4);
+		// 			this.ctx.lineTo(x_axis, y_axis);
+		// 			beforeX = x_axis;
+		// 			beforeY = y_axis;
+		// 		}
+		// 		this.ctx.stroke();
+		// 		this.ctx.closePath();
+		// 	}
+		// }
 
 	</script>
 	<script> //get elements values and start to train
@@ -120,13 +169,9 @@
 			var tranFunction = getHtmlTag('tranFunction').value;
 			var numOfHidden = getHtmlTag('numOfHidden').value;
 			//document.write("<script src='xorSetting.js'><script>");
-			var inputData = null;
-			var ni = 0;
-			var nh = 0;
-			var no = 0;
-			var tranf = '';
-			var dTranf = '';
+
 			console.log(dataSet);
+			bp = new BP();
 			switch(dataSet){
 				case '1':
 					ni = 2;
@@ -144,7 +189,7 @@
 					no = 3;	//no=1 => no=3 因為輸出表達方式從字串轉成陣列(ex:Iris-setosa => [0, 0, 1])
 					var fs = require('fs');
 					var array = fs.readFileSync('iris.data.txt').toString().split("\n");  //同步讀檔
-					var inputData = new Array(array.length);
+					inputData = new Array(array.length);
 					for(var i=0;i<array.length;i++){
 					    inputData[i] = new Array(2);
 					    inputData[i][0] = new Array(ni);
@@ -184,6 +229,15 @@
 				case '3':
 					nh = 0.5*(ni*no);
 					break;
+				case '10':
+					nh = 10;
+					break;
+				case '100':
+					nh = 100;
+					break;
+				case '1000':
+					nh = 1000;
+					break;
 			}
 
 			switch(tranFunction){
@@ -200,17 +254,65 @@
 
 			bp.init(ni, nh, no);
 			errorRate = bp.train(inputData, trainTimes, trainRate, 0.1, tranf, dTranf);
-			var recallErrorRate = bp.recall(inputData, tranf);
 
+			// var d = new DescartesCanvas();
+	  // 		var flag = d.init('curveCanvas');
+	  // 		d.clearCanvas();
+	  // 		d.basicLine();
+	  // 		d.draw(errorRate);    
 
+   		    var limit = 10000;    //increase number of dataPoints by increasing this
+   
+   			var data = []; 
+   			var dataSeries = { type: "line" };
+   			var dataPoints = [];
+   			for(var j=0;j<limit;j++){
+   				dataPoints.push({
+   					x: j,
+   					y: errorRate[j]
+   				});
+   			}
+   			dataSeries.dataPoints = dataPoints;
+   			data.push(dataSeries);
 
+    		var chart = new CanvasJS.Chart("chartContainer",
+    		{
+      			zoomEnabled: true,
+      			title:{
+        			text: "Back-Propagation" 
+      			},
+      			axisX:{
+        			labelAngle: 30
+      			},
+      
+      			axisY :{
+        			includeZero:true
+      			},
+      
+      			data: data  // random generator below
+      
+    		});
 
-			var d = new DescartesCanvas();
-	  		var flag = d.init('curveCanvas');
-	  		d.draw(errorRate);
+    		chart.render();
 
 
 		}
-	</script>	  		  
+	</script>
+	<script>	//start to recall
+		function startToRecall(){
+			if(bp != null){
+				var recallData = bp.recall(inputData, tranf);
+				console.log('recall');
+				console.log(recallData);
+				var text = document.getElementById('recallRecords');
+				var innerText = '';
+				for(var array in recallData){
+					innerText += 'inputs = [' + recallData[array][0]  + ']' + ' yds = [' + recallData[array][1] + ']' + 'real outputs = [' + recallData[array][2] + ']' + 'errorCheck = [' + recallData[array][3] + ']' + '\n';
+				}
+				text.value = innerText;
+
+			}
+		}
+	</script>
 </body>
 </html>

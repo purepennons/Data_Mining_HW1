@@ -173,8 +173,8 @@ function BP(){
 		for(var k=0;k<yd.length;k++){
 			error = error + 0.5*Math.pow(yd[k]-this.y[k],2);
 		}
-		//return [this.w_xh, this.w_hy];
-		return error;
+		return [this.w_xh, this.w_hy];
+		//return error;
 	}
 
 	this.normalizeOutputs = function(unNormalOutputs){	//使用四捨五入作正規化
@@ -210,8 +210,8 @@ function BP(){
 				var inputs = partSample[0];
 				var yds = partSample[1];
 				var outputs = this.update(inputs, tranF);	//計算實際輸出
-				//this.finalW =  this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
-				error += this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
+				this.finalW =  this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
+				//error += this.backPropagation(yds, learningRate, moment, dtranF);	//透過BP更新權重
 				var errorFlag = this.errorCheck(outputs, yds);	//回傳此筆輸出是否相同
 				if(times%100 == 0){
 					console.log('# ' + times + ' input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
@@ -244,6 +244,7 @@ function BP(){
 	//使用完成訓練之權重計算預測結果
 	this.recall = function(inputData, tranF){
 		var timesOfError = 0;
+		var recallData = [];
 		for(var v in inputData){
 			var partInput = inputData[v];
 			var inputs = partInput[0];
@@ -253,9 +254,12 @@ function BP(){
 			if(!errorFlag){
 				timesOfError++;
 			}
-			console.log('input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
+			//console.log('input = ' + inputs  + ' yds = ' + yds + ' outputs = ' + outputs + ' correct = ' + errorFlag);
+			recallData.push([inputs, yds, this.normalizeOutputs(outputs), errorFlag]);
 		}
-		return timesOfError/inputData.length;
+		console.log(recallData);		
+		//return timesOfError/inputData.length;
+		return recallData;
 	}
 
 }
